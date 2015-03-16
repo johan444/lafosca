@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.JsonWriter;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -16,8 +17,15 @@ import android.widget.Toast;
 import com.example.joan.lafosca.HttpManager;
 import com.example.joan.lafosca.R;
 import com.example.joan.lafosca.RequestPackage;
+import com.example.joan.lafosca.model.User;
+import com.example.joan.lafosca.model.UserBody;
+import com.example.joan.lafosca.rest.RestController;
+import com.google.gson.Gson;
 
 import java.io.StringWriter;
+
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 public class RegisterActivity extends ActionBarActivity {
 
@@ -37,17 +45,32 @@ public class RegisterActivity extends ActionBarActivity {
             // Gets the data from the input textfields
             EditText et_name = (EditText)findViewById(R.id.name);
             EditText et_password = (EditText)findViewById(R.id.password);
-            String name = et_name.getText().toString();
+            String username = et_name.getText().toString();
             String password = et_password.getText().toString();
 
-            if(name.isEmpty() || password.isEmpty()) {
+            if(username.isEmpty() || password.isEmpty()) {
 
                 // If there is some field left empty
                 Toast.makeText(this, "Some fields are empty", Toast.LENGTH_LONG).show();
             } else {
 
                 // Generates the request with the user information
-                requestData("http://lafosca-beach.herokuapp.com/api/v1/users", name, password);
+                // requestData("http://lafosca-beach.herokuapp.com/api/v1/users", name, password);
+
+                UserBody userBody = new UserBody();
+                User user = new User();
+                user.setUsername(username);
+                user.setPassword(password);
+                userBody.setUser(user);
+
+                Task task = new Task();
+                task.execute(userBody);
+                /*Gson gson = new Gson();
+                String jsonOutput = gson.toJson(userBody).toString();*/
+
+
+                //Log.d("response ",response.toString());
+
             }
 
         } else {
@@ -95,7 +118,7 @@ public class RegisterActivity extends ActionBarActivity {
 
         // Creates and executes the Asynchronous task which communicates with the server
         Task task = new Task();
-        task.execute(p);
+        //task.execute(p);
     }
 
     protected boolean isOnline(){
@@ -111,7 +134,7 @@ public class RegisterActivity extends ActionBarActivity {
         }
     }
 
-    private class Task extends AsyncTask<RequestPackage, String, String> {
+    private class Task extends AsyncTask<UserBody, String, Response> {
 
         @Override
         protected void onPreExecute() {
@@ -121,27 +144,37 @@ public class RegisterActivity extends ActionBarActivity {
         }
 
         @Override
-        protected String doInBackground(RequestPackage... params) {
+        protected Response doInBackground(UserBody... userBody) {
 
             // Establish connection and receive content from the server
-           String content = HttpManager.getResponse(params[0]);
-           return content;
+            UserBody ub = userBody[0];
+            Response response = null;
+            try {
+                 response = RestController.getInstance().getRestRegister().register(userBody[0]);
+            } catch (RetrofitError error) {
+                Log.e("error", error.toString());
+            } catch (Exception e) {
+                Log.e("error", e.toString());
+            }
+
+           return response;
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(Response response) {
 
             // Set progress bar invisible
             pb.setVisibility(View.INVISIBLE);
-
             // Check if there is any response
-            if(result == null){
+            if(response == null || response.getStatus() != 201){
+
                 Toast.makeText(RegisterActivity.this, "can't connect to web service", Toast.LENGTH_LONG).show();
                 return;
+            } else {
+                Log.d("response ", response.toString());
+                goToLogin();
             }
 
-            // Go to next activity
-            goToLogin();
         }
     }
 }

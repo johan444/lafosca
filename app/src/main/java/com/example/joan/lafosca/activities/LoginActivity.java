@@ -49,6 +49,7 @@ public class LoginActivity extends ActionBarActivity {
             } else {
                 // Generate the request with the user information
                 requestData("http://lafosca-beach.herokuapp.com/api/v1/user", name, password);
+
             }
 
         } else {
