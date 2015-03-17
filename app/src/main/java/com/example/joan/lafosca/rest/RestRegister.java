@@ -1,6 +1,6 @@
 package com.example.joan.lafosca.rest;
 
-import com.example.joan.lafosca.model.UserBody;
+import com.example.joan.lafosca.model.UserBodyRegister;
 
 import retrofit.client.Response;
 import retrofit.http.Body;
@@ -11,5 +11,5 @@ import retrofit.http.POST;
  */
 public interface RestRegister {
     @POST("/users")
-    public Response register(@Body UserBody userBody);
+    public Response register(@Body UserBodyRegister userBody);
 }

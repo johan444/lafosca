@@ -5,7 +5,7 @@ import com.google.gson.annotations.Expose;
 /**
  * Created by Joan on 16/3/15.
  */
-public class User {
+public class UserRegister {
 
     @Expose
     private String username;
