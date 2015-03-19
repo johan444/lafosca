@@ -26,11 +26,13 @@ public class RestController {
 
     private RestRegister mRestRegister;
     private RestLogin mRestLogin;
+    private RestApp mRestApp;
 
     private RestController() {
 
         setupRestRegister();
         setupRestLogin();
+        setupRestApp();
     }
 
     private void setupRestRegister() {
@@ -81,8 +83,33 @@ public class RestController {
         mRestLogin = mAdapter.create(RestLogin.class);
     }
 
+    private void setupRestApp() {
+
+
+        RestAdapter mAdapter = new RestAdapter.Builder()
+                .setRequestInterceptor(new RequestInterceptor() {
+                    @Override
+                    public void intercept(RequestFacade request) {
+                        request.addHeader("Content-Type", "application/json");
+                        request.addHeader("Accept", "application/json");
+                    }
+                })
+                .setEndpoint(Constants.URL_BASE)
+                .build();
+
+        if (BuildConfig.DEBUG) {
+            mAdapter.setLogLevel(RestAdapter.LogLevel.FULL);
+        }
+        else {
+            mAdapter.setLogLevel(RestAdapter.LogLevel.NONE);
+        }
+
+        mRestApp = mAdapter.create(RestApp.class);
+    }
+
     public RestRegister getRestRegister() {
         return mRestRegister;
     }
     public RestLogin getRestLogin() { return  mRestLogin; }
+    public RestApp getRestApp() { return mRestApp; }
 }

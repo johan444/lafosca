@@ -1,6 +1,7 @@
 package com.example.joan.lafosca.activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -19,10 +20,19 @@ import android.widget.Toast;
 import com.example.joan.lafosca.HttpManager;
 import com.example.joan.lafosca.R;
 import com.example.joan.lafosca.RequestPackage;
+import com.example.joan.lafosca.model.ModelKid;
+import com.example.joan.lafosca.model.ModelState;
+import com.example.joan.lafosca.rest.RestController;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 
 public class AppActivity extends ActionBarActivity {
@@ -31,6 +41,7 @@ public class AppActivity extends ActionBarActivity {
     private String state;
     private ProgressBar pb;
     private static String URL = "http://lafosca-beach.herokuapp.com/api/v1";
+    private List<ModelKid> kidsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +55,50 @@ public class AppActivity extends ActionBarActivity {
         if ( data != null) {
 
             // Get the Authorization Token
-            this.token = data.getString("token");
+            this.token = "Token token="+data.getString("token");
 
             // Start an asynchronous task to connect with the server
             // and get the information about the beach
-            getState();
+            //getState();
+            RestController.getInstance().getRestApp().getState(token,new Callback<ModelState>() {
+                @Override
+                public void success(ModelState modelState, Response response) {
+                    LinearLayout ll = (LinearLayout) findViewById(R.id.beachOpenLayout);
+                    Button btnClean = (Button) findViewById(R.id.btnClean);
+
+                    // In case the beach is open we can display all the information
+                    if (modelState.getState().equals("open")) {
+
+                        ll.setVisibility(View.VISIBLE);
+                        btnClean.setVisibility(View.INVISIBLE);
+
+                        TextView txtFlag = (TextView) findViewById(R.id.txtFlag);
+                        String flag = modelState.getFlag().toString();
+                        txtFlag.setText(flag);
+
+                        TextView txtHappiness = (TextView) findViewById(R.id.txtHappiness);
+                        String happiness = modelState.getHappiness().toString();
+                        txtHappiness.setText(happiness);
+
+                        TextView txtDirtiness = (TextView) findViewById(R.id.txtDirtiness);
+                        String dirtiness = modelState.getDirtiness().toString();
+                        txtDirtiness.setText(dirtiness);
+
+                        kidsList = modelState.getKids();
+
+                    } else {
+
+                        // Otherwise we set it to invisible
+                        ll.setVisibility(View.INVISIBLE);
+                        btnClean.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+
+                }
+            });
 
             // Bind buttons to a click listener
             Button btnState = (Button) findViewById(R.id.btnState);
@@ -68,6 +118,9 @@ public class AppActivity extends ActionBarActivity {
 
             ImageButton btnRedFlag = (ImageButton) findViewById(R.id.redFlag);
             btnRedFlag.setOnClickListener(clickListener);
+
+            Button btnKids = (Button) findViewById(R.id.btnKids);
+            btnKids.setOnClickListener(clickListener);
         }
     }
 
@@ -80,6 +133,20 @@ public class AppActivity extends ActionBarActivity {
             String flag = "";
             String msg;
             switch (v.getId()) {
+
+                case R.id.btnKids :
+                    if (kidsList != null) {
+
+                        Intent intent = new Intent(AppActivity.this, KidsActivity.class);
+                        Bundle b = new Bundle();
+
+                        b.putParcelableArrayList("kids", (ArrayList) kidsList);
+                        intent.putExtras(b);
+
+                        startActivity(intent);
+                    }
+
+                    break;
 
                 case R.id.greenFlag :
 
@@ -131,7 +198,6 @@ public class AppActivity extends ActionBarActivity {
 
                         // Changes the state of the beach (open / closed)
                         changeState();
-
                     break;
 
                 case R.id.btnNivea :
