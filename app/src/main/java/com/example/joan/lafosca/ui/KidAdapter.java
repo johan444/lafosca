@@ -6,10 +6,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.joan.lafosca.R;
 import com.example.joan.lafosca.model.ModelKid;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -32,10 +36,7 @@ public class KidAdapter extends ArrayAdapter<ModelKid>{
         }
 
         public ModelKid getData( int position ) { return data.get(position); }
-        public void setData( ArrayList<ModelKid> kidsList ) {
-            this.data.clear();
-            this.data.addAll(kidsList);
-        }
+        public void setData( ArrayList<ModelKid> kidsList ) { this.data = kidsList; }
 
     @Override
     public ModelKid getItem(int position) {
@@ -61,6 +62,9 @@ public class KidAdapter extends ArrayAdapter<ModelKid>{
             holder = new ViewHolder();
             holder.name = (TextView) convertView.findViewById(R.id.kidNameId);
             holder.age = (TextView) convertView.findViewById(R.id.kidAgeId);
+            holder.img = (ImageView) convertView.findViewById(R.id.img);
+            holder.pb = (ProgressBar) convertView.findViewById(R.id.imgLoader);
+            holder.pb.setVisibility(View.GONE);
 
             convertView.setTag(holder);
         } else {
@@ -73,11 +77,38 @@ public class KidAdapter extends ArrayAdapter<ModelKid>{
 
         holder.age.setText(kid.getAge().toString());
 
+        Picasso.with(mContext).load(kid.getUrl()).resize(50, 50).placeholder(R.anim.progress_animation).into(holder.img);
+//                new ImageLoadedCallback(holder.pb) {
+//
+//            @Override
+//            public void onSuccess() {
+//                if (this.progressBar != null) {
+//                    this.progressBar.setVisibility(View.GONE);
+//                }
+//            }
+//        });
+
         return convertView;
     }
+    private class ImageLoadedCallback implements Callback {
+        ProgressBar progressBar;
 
+        public ImageLoadedCallback(ProgressBar progBar){
+            progressBar = progBar;
+        }
+        @Override
+        public void onSuccess() {
+        }
+        @Override
+        public void onError() {
+
+        }
+    }
     private static class ViewHolder {
         public TextView name;
         public TextView age;
+        public ImageView img;
+        public ProgressBar pb;
     }
+
 }

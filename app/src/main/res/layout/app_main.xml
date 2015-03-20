@@ -186,6 +186,13 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp"
                 android:text="Lost Kids" />
+            <ImageView
+                android:layout_width="100px"
+                android:layout_height="100px"
+                android:layout_marginTop="20dp"
+                android:id="@+id/imgID"
+                android:layout_gravity="center_horizontal"/>
+
         </LinearLayout>
     </RelativeLayout>
 </ScrollView>

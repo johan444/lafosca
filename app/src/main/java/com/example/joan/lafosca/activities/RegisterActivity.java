@@ -28,6 +28,12 @@ public class RegisterActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        android.support.v7.app.ActionBar menu = getSupportActionBar();
+        menu.setDisplayShowHomeEnabled(true);
+        menu.setLogo(R.drawable.logo);
+        menu.setDisplayUseLogoEnabled(true);
+
         setContentView(R.layout.register);
         pb = (ProgressBar) findViewById(R.id.progressBar);
     }

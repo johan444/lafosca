@@ -6,12 +6,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 import android.util.JsonWriter;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -20,16 +22,29 @@ import android.widget.Toast;
 import com.example.joan.lafosca.HttpManager;
 import com.example.joan.lafosca.R;
 import com.example.joan.lafosca.RequestPackage;
+import com.example.joan.lafosca.controllers.OrmHelper;
 import com.example.joan.lafosca.model.ModelKid;
 import com.example.joan.lafosca.model.ModelState;
+import com.example.joan.lafosca.model.OrmKid;
 import com.example.joan.lafosca.rest.RestController;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.StringWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -42,12 +57,28 @@ public class AppActivity extends ActionBarActivity {
     private ProgressBar pb;
     private static String URL = "http://lafosca-beach.herokuapp.com/api/v1";
     private List<ModelKid> kidsList;
+    private OrmHelper databaseHelper = null;
+
+    @InjectView(R.id.imgID) ImageView img;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        android.support.v7.app.ActionBar menu = getSupportActionBar();
+        menu.setDisplayShowHomeEnabled(true);
+        menu.setLogo(R.drawable.logo);
+        menu.setDisplayUseLogoEnabled(true);
+
+        overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+
         setContentView(R.layout.app_main);
+
         pb = (ProgressBar) findViewById(R.id.progressBar);
+
+        ButterKnife.inject(this);
+
+        Picasso.with(this).load("http://i.imgur.com/DvpvklR.png").into(img);
 
         // Get JSON data coming from the login
         Bundle data = getIntent().getExtras();
@@ -136,6 +167,8 @@ public class AppActivity extends ActionBarActivity {
 
                 case R.id.btnKids :
                     if (kidsList != null) {
+                        // Database functionality
+                        insertKids2DB();
 
                         Intent intent = new Intent(AppActivity.this, KidsActivity.class);
                         Bundle b = new Bundle();
@@ -204,9 +237,47 @@ public class AppActivity extends ActionBarActivity {
 
                         // Resets the happiness value to level 100
                         niveaBalls();
+                    break;
             }
         }
     };
+
+    private OrmHelper getHelper() {
+        if (databaseHelper == null) {
+            databaseHelper = OpenHelperManager.getHelper(this, OrmHelper.class);
+        }
+        return databaseHelper;
+    }
+
+    protected void insertKids2DB() {
+
+        try {
+
+            Dao<OrmKid, Long> kidDao = getHelper().getKidDataDao();
+            OrmHelper helper = OpenHelperManager.getHelper(this, OrmHelper.class);
+
+            OrmKid ormKid = new OrmKid();
+
+            for (ModelKid kid:kidsList) {
+                ormKid.setName(kid.getName());
+                ormKid.setAge(kid.getAge());
+                kidDao.createOrUpdate(ormKid);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
+        }
+    }
 
     protected String parseFlagMsg(String idFlag) {
 

@@ -31,4 +31,8 @@ dependencies {
         // exclusion is not necessary, but generally a good idea.
         exclude group: 'com.google.android', module: 'support-v4'
     }
+    compile 'com.j256.ormlite:ormlite-core:4.48'
+    compile 'com.j256.ormlite:ormlite-android:4.48'
+    compile 'com.squareup.picasso:picasso:2.5.0'
+    compile 'uk.co.chrisjenx:calligraphy:2.0.2'
 }

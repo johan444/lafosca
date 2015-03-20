@@ -19,7 +19,25 @@ public class ModelKid implements Parcelable{
     @Expose
     private Integer age;
 
+    private String url;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+
     public ModelKid() {}
+
+    public ModelKid(String name, int age, String url) {
+        this.name = name;
+        this.age = age;
+        this.url = url;
+    }
+
     /**
      *
      * @return
@@ -77,7 +95,6 @@ public class ModelKid implements Parcelable{
         public ModelKid createFromParcel(Parcel source) {
             return new ModelKid(source);
         }
-
         public ModelKid[] newArray(int size) {
             return new ModelKid[size];
         }
